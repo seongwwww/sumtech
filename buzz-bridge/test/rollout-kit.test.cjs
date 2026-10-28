@@ -113,7 +113,10 @@ test('two Windows configurations propagate separate config/data and stopping one
       assert.match(call('run', profile, ['-Config', profile.config, '-Agent', i ? 'claude' : 'codex']), /RUNNING/);
       const stdout = await fs.readFile(path.join(profile.data, 'BuzzBridge/runner/stdout.log'), 'utf8');
       const actual = JSON.parse(stdout.trim());
-      assert.equal(actual.config, profile.config); assert.equal(actual.data, profile.data);
+      // Windows TEMP may use an 8.3 alias (RUNNER~1) while PowerShell/Node
+      // resolves the same folder to its long name. Compare directory identity.
+      assert.equal(await fs.realpath(actual.config), await fs.realpath(profile.config));
+      assert.equal(await fs.realpath(actual.data), await fs.realpath(profile.data));
       assert.ok(actual.args.includes(i ? 'claude' : 'codex'));
     }
     const record = profile => fs.readFile(path.join(profile.data, 'BuzzBridge/runner/runner.json'), 'utf8').then(JSON.parse);
