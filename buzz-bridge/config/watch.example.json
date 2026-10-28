@@ -1,0 +1,13 @@
+{
+  "repository": "seongwwww/sumtech",
+  "discover_new": true,
+  "interval_seconds": 60,
+  "channel": "agent-reports",
+  "tasks": [
+    {
+      "pull_request": null,
+      "task_id": "P002",
+      "issue": 2
+    }
+  ]
+}

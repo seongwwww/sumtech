@@ -1,0 +1,28 @@
+{
+  "task_id": "P001",
+  "repository": "seongwwww/sumtech",
+  "title": "Buzz–Codex 연결 테스트",
+  "status": "completed",
+  "agent": "Agent-A",
+  "issue": 1,
+  "pull_request": null,
+  "branch": null,
+  "source_state": "local_only_not_committed",
+  "changed_files": [
+    "buzz-bridge/initialize-agent.mjs",
+    "buzz-bridge/publish-profile.mjs",
+    "buzz-bridge/receive-mentions.mjs"
+  ],
+  "tests": {
+    "type": "manual_connection_test",
+    "status": "passed",
+    "evidence": "사용자가 Agent-A 인증·프로필 게시·멘션 수신·Codex 응답의 동일 스레드 게시 성공을 확인함"
+  },
+  "summary": "Windows 로컬 Bridge에서 허용된 사용자의 Buzz 멘션을 수신하고 별도 Codex 프로세스의 답변을 같은 스레드에 게시하는 PoC 완료",
+  "limitations": [
+    "기존 개발 터미널의 세션과 대화 기록을 재사용하지 않음",
+    "브리지 코드는 개발자 PC에만 있으며 GitHub에 아직 커밋되지 않음",
+    "기본 답변 테스트는 한 건 처리 후 종료함",
+    "전체 보안 경계·상시 운영·10인 배포 검증은 아직 완료하지 않음"
+  ]
+}

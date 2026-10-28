@@ -5,6 +5,7 @@
 **/*.identity.json
 **/runner.json
 buzz-bridge/config/local.json
+buzz-bridge/config/*.local.json
 .env
 .env.local
 
