@@ -58,5 +58,12 @@
     "buzz-bridge/test/settings.test.cjs",
     "buzz-bridge/test/source-delivery.test.cjs",
     "buzz-bridge/windows-env.mjs"
+  ],
+  "supporting_artifacts": [
+    "README.md",
+    "AGENTS.md",
+    "paseo.json",
+    ".gitattributes",
+    ".gitignore"
   ]
 }

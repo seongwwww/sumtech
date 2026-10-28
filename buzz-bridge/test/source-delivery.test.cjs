@@ -31,6 +31,8 @@ test('source archive contains declared artifacts, excludes keys/dependencies/sta
   const listing = execFileSync('tar.exe', ['-tf', output], { encoding: 'utf8', windowsHide: true }).replaceAll('\\', '/');
   assert.match(listing, /buzz-bridge\/test\/report-workflow.test.cjs/);
   assert.match(listing, /buzz-bridge\/README.ko.md/);
+  assert.match(listing, /(?:^|\r?\n)paseo\.json(?:\r?\n|$)/);
+  assert.match(listing, /(?:^|\r?\n)README\.md(?:\r?\n|$)/);
   assert.doesNotMatch(listing, /node_modules|\.identity\.json|stdout\.log|runner\.json/);
   const crypto = require('node:crypto');
   assert.equal(crypto.createHash('sha256').update(await fs.readFile(output)).digest('hex'), result.sha256);
