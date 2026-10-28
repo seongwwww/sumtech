@@ -1,10 +1,11 @@
+import { project } from './projects.mjs';
 import { readFile, mkdir, writeFile, rename } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { finalizeEvent, verifyEvent, getPublicKey } from 'nostr-tools';
 
 export function validateWatchConfig(value) {
-  if (value?.repository !== 'seongwwww/sumtech' || !['test', 'agent-reports'].includes(value.channel)
+  if (value?.repository !== project.repository || !project.channels.includes(value.channel)
     || !Array.isArray(value.tasks) || !value.tasks.length || value.tasks.length > 100) throw new Error('Invalid GitHub watch configuration.');
   const interval = value.interval_seconds ?? 60;
   if (!Number.isInteger(interval) || interval < 30 || interval > 3600) throw new Error('Polling interval must be 30–3600 seconds.');
@@ -19,6 +20,7 @@ export function validateWatchConfig(value) {
     tasks: value.tasks.map(({ task_id, issue = null, pull_request = null }) => ({ task_id, issue, pull_request })) };
 }
 export async function readWatchConfig(args) {
+  if (!args.includes('--watch-config') && project.watch_config) return validateWatchConfig(JSON.parse(await readFile(project.watch_config, 'utf8')));
   const index = args.indexOf('--watch-config');
   if (index < 0 || !args[index + 1] || args[index + 1].startsWith('--')) throw new Error('--watch-config requires a JSON file.');
   return validateWatchConfig(JSON.parse(await readFile(args[index + 1], 'utf8')));

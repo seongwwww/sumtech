@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "selected": "alpha",
+  "projects": {
+    "alpha": {
+      "name": "alpha",
+      "repository": "my-team/alpha",
+      "relay": "wss://alpha.example.com/",
+      "workspace": "D:\\work\\alpha",
+      "channels": ["alpha-chat", "alpha-reports"],
+      "report_channel": "alpha-reports",
+      "watch_config": "D:\\work\\alpha\\watch.json"
+    },
+    "beta": {
+      "name": "beta",
+      "repository": "my-team/beta",
+      "relay": "wss://beta.example.com/",
+      "workspace": "E:\\team projects\\beta",
+      "channels": ["beta-chat", "beta-reports"],
+      "report_channel": "beta-reports"
+    }
+  }
+}

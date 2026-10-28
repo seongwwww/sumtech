@@ -5,7 +5,7 @@
     "ws": "^8.22.0"
   },
   "name": "buzz-collaboration-bridge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "engines": {
     "node": ">=22.0.0"
@@ -14,11 +14,12 @@
     "test": "node --test test/*.test.cjs",
     "self-test": "node receive-mentions.mjs --self-test",
     "start": "node scripts/start-local.mjs",
-    "status": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/status.ps1",
-    "stop": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/stop.ps1",
+    "status": "node scripts/project.mjs status",
+    "stop": "node scripts/project.mjs stop",
     "report": "node receive-mentions.mjs --report",
     "profile": "node publish-profile.mjs --http",
     "verify:pc": "node scripts/verify-pc.mjs",
-    "pack:source": "node scripts/pack-source.mjs"
+    "pack:source": "node scripts/pack-source.mjs",
+    "project": "node scripts/project.mjs"
   }
 }

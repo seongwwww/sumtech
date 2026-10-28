@@ -1,8 +1,10 @@
 # Windows Buzz 협업 Bridge
 
-개발자마다 기존 Codex CLI / Claude Code와 로컬 Bridge를 유지하는 Windows 협업 환경입니다. HTTPS NIP-98 서명 `POST /query`, `POST /events`를 사용합니다. Relay는 `https://buzz-ciik.srv2103980.hstgr.cloud`이며 개인 설정은 `config/local.json`에서 읽습니다.
+개발자마다 기존 Codex CLI / Claude Code와 로컬 Bridge를 유지하는 Windows 협업 환경입니다. HTTPS NIP-98 서명 `POST /query`, `POST /events`를 사용합니다. legacy 기본 Relay는 `https://buzz-ciik.srv2103980.hstgr.cloud`이며 개인 설정은 `config/local.json`에서 읽습니다.
 
 각 PC는 Agent-A부터 Agent-J까지 서로 다른 이름과 로컬 identity를 사용하고, 해당 Agent를 호출할 팀원의 HEX 공개키를 설정합니다. 작업 보고·문서·Issue/PR를 공유하며 기존 터미널 대화는 공유하지 않습니다. 현재 실환경 검증은 Agent-A PC 한 대에서 수행했고, 나머지 PC는 아래 설치 절차를 실제 수행한 뒤 체크리스트에 기록해야 합니다.
+
+여러 저장소는 [한 번 설치하고 프로젝트 여러 개 사용하기](#한-번-설치하고-프로젝트-여러-개-사용하기)를 따르세요. 아래 sumtech 절차는 `--project legacy` 기준입니다.
 
 ## 설치와 계정
 
@@ -213,3 +215,105 @@ npm run pack:source
 `pack:source`는 `delivery.seed.json`의 소스·테스트·문서 목록으로 ZIP을 묶고 SHA256을 생성합니다. node_modules, 로컬 설정, identity, 상태와 로그는 포함하지 않습니다. ZIP은 `dist/buzz-bridge-source.zip`입니다. 실제 push/PR/CI 상태와 실행 기록은 GitHub에서 확인합니다.
 
 알림 담당 PC에서는 `config/watch.example.json`을 `config/watch.local.json`으로 복사하고 담당 Issue/PR 번호를 넣으세요. `npm.cmd start`와 Paseo의 Buzz 시작은 이 로컬 파일이 있으면 알림도 함께 실행합니다. 파일이 없는 다른 PC에서는 멘션 수신만 실행합니다. `discover_new: true`는 baseline 이후 새로 관측한 저장소 Issue/PR도 알립니다. 제목에 P002 같은 작업 ID가 있고 해당 채널의 매핑이 있으면 그 작업 스레드에 연결합니다.
+## 한 번 설치하고 프로젝트 여러 개 사용하기
+
+Bridge 설치 폴더는 한 곳만 사용합니다. 아래 PowerShell 명령의 설치 경로, GitHub 저장소, Relay 주소, 채널 이름은 실제 값으로 바꾸세요. 프로젝트 소스는 설치 폴더 밖에 있어도 됩니다. 소스 수정이나 프로젝트마다 `npm ci`를 할 필요가 없습니다.
+
+```powershell
+$bridge = 'C:\tools\buzz-bridge'
+npm.cmd --prefix $bridge ci
+# 새 PC의 Agent identity와 Codex/Claude/GitHub 로그인은 아래 기존 설치 절차를 한 번만 수행합니다.
+# 이미 identity가 있으면 다시 초기화하거나 복사하지 않습니다.
+npm.cmd --prefix $bridge run project -- add alpha --repo my-team/alpha --relay https://alpha.example.com --workspace 'D:\work\alpha' --channels alpha-chat,alpha-reports --report-channel alpha-reports
+npm.cmd --prefix $bridge run project -- add beta --repo https://github.com/my-team/beta --relay wss://beta.example.com/ --workspace 'E:\team projects\beta' --channels beta-chat,beta-reports --report-channel beta-reports
+npm.cmd --prefix $bridge run project -- list
+npm.cmd --prefix $bridge run project -- connect --project alpha
+npm.cmd --prefix $bridge run project -- connect --project beta
+```
+
+`connect`는 메시지를 보내지 않습니다. 개발자 로컬 identity로 인증한 `/query`의 서명된 39000(채널), 39001(owner), 39002(멤버) 응답을 확인하고 signer/owner/channel ID를 프로젝트에 저장합니다. **커뮤니티 가입 승인과 채널 Manage members 등록은 관리자가 별도로 해야 합니다.** 선택만으로 승인되지 않습니다. 응답이 없으면 Relay URL, 가입 승인, 채널 이름과 멤버 등록을 확인하세요. 여러 signer/owner 때문에 자동 확인할 수 없으면 관리자에게 실제 public key를 받아 `add`의 `--signer HEX --owner HEX`를 지정하세요. 이미 추가한 이름은 덮어쓰지 않습니다. 잘못 추가한 프로필은 실행 중인 해당 프로젝트를 중지한 뒤 로컬 등록 파일을 백업하고 수정하거나 새 이름으로 추가하세요. 채널 ID를 다시 확인할 때는 `connect`를 명시적으로 실행합니다. 이미 실행 중인 러너는 기존 설정을 유지합니다.
+
+등록 파일은 `%LOCALAPPDATA%\BuzzBridge\projects.json`입니다. [두 프로젝트 설정 예제](config/projects.example.json)는 형식 참고용이며 실제 연결 성공 기록이 아닙니다. `workspace`는 해당 저장소 문서의 기준 경로입니다. `documents`에는 그 아래 상대 경로를 씁니다. `..`, 절대 경로와 루트 밖 symlink는 거부됩니다. 추가 허용 호출자는 프로젝트의 `allowed_callers`에 HEX public key 배열로 설정할 수 있습니다. 개인키나 로그인 정보는 넣지 마세요.
+
+매일 사용할 명령:
+
+```powershell
+npm.cmd --prefix $bridge run project -- use alpha
+npm.cmd --prefix $bridge start -- --project alpha --agent codex
+npm.cmd --prefix $bridge start -- --project beta --agent claude
+npm.cmd --prefix $bridge run status -- --project alpha
+npm.cmd --prefix $bridge run status -- --project beta
+# use는 다음 명령의 기본값만 바꿉니다. alpha listener는 계속 alpha에서 동작합니다.
+npm.cmd --prefix $bridge run project -- use beta
+npm.cmd --prefix $bridge run report -- 'D:\work\alpha\P001.json' --project alpha
+npm.cmd --prefix $bridge run report -- 'E:\team projects\beta\P001.json' --project beta
+npm.cmd --prefix $bridge run stop -- --project alpha
+# beta 러너는 유지됩니다.
+```
+
+`D:\work\alpha\P001.json`에 아래 예제를 저장한 뒤 실제 결과로 고치세요. beta에서는 `project`, `repository`, `channel`을 각각 `beta`, `my-team/beta`, `beta-reports`로 바꿉니다. 두 프로젝트 모두 P001을 쓸 수 있습니다. 새 작업은 팀에서 배정받은 ID를 쓰세요.
+
+```json
+{
+  "project": "alpha",
+  "task_id": "P001",
+  "repository": "my-team/alpha",
+  "channel": "alpha-reports",
+  "title": "첫 작업",
+  "status": "in_progress",
+  "summary": "실제로 수행한 작업을 작성",
+  "changed_files": [],
+  "tests": { "status": "not_run" },
+  "issue": null,
+  "pull_request": null,
+  "documents": ["README.md"]
+}
+```
+
+다시 보고할 때 같은 JSON을 수정해서 제출하면 원래 스레드를 사용합니다. 일반 JSON 보고서는 기존 `reportId/threadId/revisionId/previousRevisionId/submissionKey/payload`에 `"project":"alpha"`를 추가하고 필요하면 `channel`을 지정합니다. 이름이 맞지 않으면 전송 전에 차단합니다. 일반 보고의 리비전과 submissionKey 규칙은 기존과 같습니다. 프로젝트를 생략한 오래된 JSON은 `--project legacy`로 실행합니다. named 프로젝트의 `--report-p001` 기본 파일은 `<workspace>\buzz-tasks\P001.json`이고, 일반 보고는 임의 경로의 `--report` 파일을 사용합니다.
+
+Buzz에서 해당 프로젝트 채널의 원래 보고 스레드를 열고 @ 메뉴에서 자신의 Agent를 선택해 `@Agent-B P001의 Issue/PR/CI와 README 운영 절차를 알려줘`라고 보냅니다. 입력창에 이름만 타이핑하면 멘션 태그가 없을 수 있으므로 메뉴에서 선택하세요. 서로 다른 채널의 작업 문맥은 섞지 않습니다. 답변은 읽기 전용이며 코드 변경이나 자동 작업 배정은 하지 않습니다. Codex/Claude 로그인과 GitHub `gh auth`는 개발자 로컬에서 별도로 유지합니다.
+
+GitHub 폴링은 프로젝트별 watch 파일을 사용합니다. 예를 들어 `D:\work\alpha\watch.json`:
+
+```json
+{"repository":"my-team/alpha","channel":"alpha-reports","interval_seconds":60,"tasks":[{"task_id":"P001","issue":1,"pull_request":2}]}
+```
+
+```powershell
+# 보고 listener가 watch도 함께 수행: 저장소에 실제 존재하는 Issue/PR 번호를 사용하세요.
+npm.cmd --prefix $bridge run project -- start --project alpha --watch-config 'D:\work\alpha\watch.json'
+# 별도 notifications 모드는 먼저 해당 프로젝트 listener를 중지한 뒤 실행합니다.
+npm.cmd --prefix $bridge run project -- stop --project alpha
+npm.cmd --prefix $bridge run project -- start --project alpha --mode notifications --watch-config 'D:\work\alpha\watch.json'
+```
+
+지속 사용하려면 프로필의 `watch_config`에 절대 경로를 저장하거나 `add` 때 `--watch-config`로 지정하세요. 상태·보고/답변 중복 기록·outbox·스냅샷·커서·큐·잠금·러너 PID/로그는 `%LOCALAPPDATA%\BuzzBridge\projects\<이름>`에 분리됩니다. identity는 기존 `%LOCALAPPDATA%\BuzzBridge\agent-*.identity.json`을 그대로 재사용합니다. 새 프로필 등록은 기존 sumtech P001/P002 기록을 이동하거나 삭제하지 않습니다. 프로필 등록 전에는 기존 명령이 그대로 legacy이며, 등록 이후에도 `--project legacy` 또는 `project use legacy`로 원래 동작을 선택합니다. 멈춘 러너의 stale 기록/잠금은 자동 삭제하지 않으므로 해당 PID와 로그를 확인하고 백업 후 복구하세요.
+
+새 fixture 검증은 실제 두 저장소/Relay의 라이브 가입이나 외부 발송을 증명하지 않습니다. 테스트는 임시 디렉터리의 서명 이벤트, 가짜 GitHub 응답과 Windows fixture 러너를 사용합니다. 검증 명령은 `npm.cmd --prefix $bridge test`입니다.
+
+### 저장소·커뮤니티·채널만 지정하는 빠른 등록
+
+Bridge와 개발자 identity는 한 번 설치합니다. 아래는 이미 checkout한 새 프로젝트 폴더에서 실행합니다. `$bridge`는 기존 공통 설치 위치이며 프로젝트마다 다시 `npm ci`를 실행하지 않습니다.
+
+```powershell
+$bridge = 'C:\tools\sumtech\buzz-bridge'
+cd C:\work\alpha
+npm.cmd --prefix $bridge run project -- add alpha --repo my-team/alpha --relay wss://alpha.example/ --channels alpha-reports
+```
+
+`--workspace`를 생략하면 npm 명령을 실행한 원래 폴더(`INIT_CWD`)를 작업·문서 기준 경로로 저장합니다. 직접 Node로 CLI를 실행하면 현재 폴더를 사용합니다. `--report-channel`을 생략하면 `--channels`의 첫 채널이 보고 채널입니다. 다른 경로·보고 채널을 쓰려면 두 옵션을 명시하세요.
+
+새 커뮤니티의 관리자가 기존 Agent 공개키를 Community admin → Membership에 등록하고, 아래로 Agent 프로필을 게시한 뒤 지정한 채널의 Manage members에서 Agent를 추가합니다. 기존 Agent identity를 다시 만들지 않습니다. 새 프로젝트는 설정한 채널만 사용하므로 `test` 채널을 별도로 만들거나 추가할 필요가 없습니다.
+
+```powershell
+npm.cmd --prefix $bridge run profile -- --project alpha
+npm.cmd --prefix $bridge run project -- connect --project alpha
+npm.cmd --prefix $bridge run project -- use alpha
+npm.cmd --prefix $bridge start
+npm.cmd --prefix $bridge run status
+```
+
+등록만으로 커뮤니티나 멤버 승인이 생성되지는 않습니다. `connect`는 승인·채널 접근을 확인하고, `start`는 수신기를 실행합니다. 개발자 로컬 설정의 호출자 목록은 새 프로젝트에도 유지됩니다. 프로젝트를 바꾼 뒤에도 기존 수신기는 원래 프로젝트를 처리하므로 종료하려면 `npm.cmd --prefix $bridge stop -- --project alpha`처럼 대상을 명시합니다. 같은 Agent의 프로젝트들은 커뮤니티 또는 채널을 구분해서 구성하세요.
+
+기존 sumtech는 예약된 `legacy` 프로필입니다. `npm.cmd --prefix $bridge run project -- use legacy`로 기본값을 되돌릴 수 있고, 보고·시작·상태·종료 명령에 `--project legacy`를 지정해 기존 기록을 사용합니다. Paseo의 시작·상태·종료도 같은 프로젝트 선택을 사용합니다.

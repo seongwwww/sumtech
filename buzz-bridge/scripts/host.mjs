@@ -1,3 +1,4 @@
+const project = process.env.BUZZ_PROJECT_SNAPSHOT ? JSON.parse(process.env.BUZZ_PROJECT_SNAPSHOT) : { channels: ['test', 'agent-reports'] };
 import { spawn, execFileSync } from 'node:child_process';
 import { readFile, writeFile, unlink, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -8,9 +9,9 @@ if (!/^[a-f0-9]{32}$/.test(instance ?? '') || !['listen', 'notifications'].inclu
 const statePath = join(directory, 'runner.json'), stopPath = join(directory, `stop-${instance}`);
 await mkdir(directory, { recursive: true });
 const bridge = fileURLToPath(new URL('../receive-mentions.mjs', import.meta.url));
-const args = [bridge, '--agent', backend, '--channels', 'test,agent-reports',
+const args = [bridge, '--agent', backend, '--channels', project.channels.join(','),
   mode === 'listen' ? '--listen' : '--watch-github'];
-if (watchFile) args.push('--watch-config', watchFile);
+if (watchFile || project.watch_config) args.push('--watch-config', watchFile || project.watch_config);
 const child = spawn(process.execPath, args, { windowsHide: true, shell: false, stdio: ['ignore', 'inherit', 'inherit'] });
 let terminating = false;
 const terminate = () => {

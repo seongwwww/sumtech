@@ -1,3 +1,4 @@
+import { project, stateDirectory } from './projects.mjs';
 import { mkdir, readFile, writeFile, rename, unlink, rmdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
@@ -17,15 +18,16 @@ function canonical(value) {
 }
 
 export function validateReport(value) {
+  if ((project.name !== 'legacy' || value?.project != null) && value?.project !== project.name) throw new Error('Report project must match --project; refusing cross-project report.');
   for (const name of ['reportId', 'threadId', 'revisionId', 'submissionKey']) {
     if (typeof value?.[name] !== 'string' || !identity.test(value[name])) throw new Error(`Invalid report ${name}.`);
   }
   if (value.previousRevisionId != null && (typeof value.previousRevisionId !== 'string' || !identity.test(value.previousRevisionId))) throw new Error('Invalid previousRevisionId.');
   if (!Object.hasOwn(value, 'payload')) throw new Error('Report requires a JSON payload.');
-  const report = { reportId: value.reportId, threadId: value.threadId, revisionId: value.revisionId,
+  const report = { ...(project.name !== 'legacy' ? { project: project.name } : {}), reportId: value.reportId, threadId: value.threadId, revisionId: value.revisionId,
     submissionKey: value.submissionKey, previousRevisionId: value.previousRevisionId ?? null,
-    channel: value.channel ?? 'agent-reports', payload: JSON.parse(canonical(value.payload)) };
-  if (!['test', 'agent-reports'].includes(report.channel)) throw new Error('Report channel must be test or agent-reports.');
+    channel: value.channel ?? project.report_channel, payload: JSON.parse(canonical(value.payload)) };
+  if (!project.channels.includes(report.channel)) throw new Error('Report channel must be configured in this project.');
   if (Buffer.byteLength(canonical(report)) > 24000) throw new Error('Report exceeds 24000 bytes.');
   return report;
 }
@@ -50,7 +52,7 @@ async function atomicJson(file, value) {
 export async function publishGenericReport(channel, secret, query, post, value) {
   const report = validateReport(value);
   if (!process.env.LOCALAPPDATA) throw new Error('LOCALAPPDATA is required for durable report state.');
-  const directory = join(process.env.LOCALAPPDATA, 'BuzzBridge', 'reports');
+  const directory = join(stateDirectory(), 'reports');
   await mkdir(directory, { recursive: true });
   const file = join(directory, `${hash(report.reportId)}.json`);
   const lock = `${file}.lock`;
