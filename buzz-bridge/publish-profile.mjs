@@ -1,3 +1,4 @@
+import { project } from './projects.mjs';
 import { windowsPowerShellEnv } from './windows-env.mjs';
 import { settings } from './settings.mjs';
 import { readFile } from 'node:fs/promises';
@@ -7,12 +8,12 @@ import { createHash, randomUUID } from 'node:crypto';
 import { finalizeEvent, getPublicKey, verifyEvent } from 'nostr-tools';
 import WebSocket from 'ws';
 
-const RELAY = 'wss://buzz-ciik.srv2103980.hstgr.cloud/';
+const RELAY = project.relay;
 const PUBLIC_KEY = settings.agentPublicKey;
 
 async function main() {
   const identity = JSON.parse(await readFile(settings.identityPath, 'utf8'));
-  if (identity.public_key !== PUBLIC_KEY || identity.relay_url !== RELAY || identity.protection !== 'Windows DPAPI CurrentUser') {
+  if (identity.public_key !== PUBLIC_KEY || (project.name === 'legacy' && identity.relay_url !== RELAY) || identity.protection !== 'Windows DPAPI CurrentUser') {
     throw new Error('Identity does not match the approved agent and relay.');
   }
   const command = [
@@ -41,7 +42,7 @@ async function main() {
 // The official Buzz CLI uses the NIP-98 HTTP bridge for stored events.
 async function publishHttp(secret) {
   console.log('PROFILE_TRANSPORT=HTTPS_NIP98_V1');
-  const origin = 'https://buzz-ciik.srv2103980.hstgr.cloud';
+  const origin = project.origin;
   const clean = (value) => String(value).replace(/[\x00-\x1f\x7f]/g, ' ').slice(0, 700);
   async function post(path, value) {
     const url = origin + path;

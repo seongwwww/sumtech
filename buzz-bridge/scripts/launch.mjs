@@ -5,7 +5,7 @@ const out = openSync(stdout, 'w'), err = openSync(stderr, 'w');
 try {
   const child = spawn(process.execPath, [host, instance, mode, backend, directory, watchFile], {
     windowsHide: true, detached: true, shell: false, stdio: ['ignore', out, err],
-    env: { ...process.env, ...(config ? { BUZZ_BRIDGE_CONFIG: config } : {}),
+    env: { ...process.env, BUZZ_PROJECT: process.env.BUZZ_PROJECT_SNAPSHOT ? process.env.BUZZ_PROJECT : 'legacy', ...(config ? { BUZZ_BRIDGE_CONFIG: config } : {}),
       ...(dataDirectory ? { LOCALAPPDATA: dataDirectory } : {}) },
   });
   child.once('error', () => { console.error('Detached host launch failed.'); process.exitCode = 1; });

@@ -6,11 +6,11 @@
     },
     "Buzz 상태": {
       "type": "script",
-      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File buzz-bridge/scripts/status.ps1"
+      "command": "npm.cmd --prefix buzz-bridge run status"
     },
     "Buzz 종료": {
       "type": "script",
-      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File buzz-bridge/scripts/stop.ps1"
+      "command": "npm.cmd --prefix buzz-bridge stop"
     },
     "Bridge 테스트": {
       "type": "script",

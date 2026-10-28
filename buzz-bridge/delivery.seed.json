@@ -16,6 +16,7 @@
     "buzz-bridge/.gitignore",
     "buzz-bridge/claude.mjs",
     "buzz-bridge/config/agent.example.json",
+    "buzz-bridge/config/projects.example.json",
     "buzz-bridge/config/report.example.json",
     "buzz-bridge/config/watch.example.json",
     "buzz-bridge/delivery.seed.json",
@@ -25,6 +26,7 @@
     "buzz-bridge/notifications.mjs",
     "buzz-bridge/package-lock.json",
     "buzz-bridge/package.json",
+    "buzz-bridge/projects.mjs",
     "buzz-bridge/publish-profile.mjs",
     "buzz-bridge/README.ko.md",
     "buzz-bridge/receive-mentions.mjs",
@@ -32,6 +34,7 @@
     "buzz-bridge/scripts/host.mjs",
     "buzz-bridge/scripts/launch.mjs",
     "buzz-bridge/scripts/pack-source.mjs",
+    "buzz-bridge/scripts/project.mjs",
     "buzz-bridge/scripts/run.ps1",
     "buzz-bridge/scripts/setup-agent.mjs",
     "buzz-bridge/scripts/start-local.mjs",
@@ -45,10 +48,22 @@
     "buzz-bridge/test/context-answer-workflow.test.cjs",
     "buzz-bridge/test/helpers.cjs",
     "buzz-bridge/test/notification-workflow.test.cjs",
+    "buzz-bridge/test/project-compatibility.test.cjs",
+    "buzz-bridge/test/project-fixtures.cjs",
+    "buzz-bridge/test/project-guidance.test.cjs",
+    "buzz-bridge/test/project-isolation.test.cjs",
+    "buzz-bridge/test/project-profiles.test.cjs",
     "buzz-bridge/test/report-workflow.test.cjs",
     "buzz-bridge/test/rollout-kit.test.cjs",
     "buzz-bridge/test/settings.test.cjs",
     "buzz-bridge/test/source-delivery.test.cjs",
     "buzz-bridge/windows-env.mjs"
+  ],
+  "supporting_artifacts": [
+    "README.md",
+    "AGENTS.md",
+    "paseo.json",
+    ".gitattributes",
+    ".gitignore"
   ]
 }
