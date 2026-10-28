@@ -1,0 +1,20 @@
+{
+  "scripts": {
+    "Buzz 시작": {
+      "type": "script",
+      "command": "npm.cmd --prefix buzz-bridge start"
+    },
+    "Buzz 상태": {
+      "type": "script",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File buzz-bridge/scripts/status.ps1"
+    },
+    "Buzz 종료": {
+      "type": "script",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File buzz-bridge/scripts/stop.ps1"
+    },
+    "Bridge 테스트": {
+      "type": "script",
+      "command": "npm.cmd --prefix buzz-bridge test"
+    }
+  }
+}

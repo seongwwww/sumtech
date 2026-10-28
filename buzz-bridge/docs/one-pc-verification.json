@@ -1,0 +1,52 @@
+{
+  "verified_at": "2026-10-28T18:00:49.518Z",
+  "scope": "one Windows PC; live Buzz HTTPS and GitHub reads; no ten-PC deployment",
+  "checks": [
+    {
+      "command": "node publish-profile.mjs --http",
+      "output": "PROFILE_TRANSPORT=HTTPS_NIP98_V1\nAgent-A HTTPS profile query accepted.\nVERIFIED_PROFILE=Agent-A PUBLIC_KEY=8b67d6e51fe8c6658be447b0e2884cdcd80bcebbc27d4d0d8390deee5c3a2b7a (already published)"
+    },
+    {
+      "command": "node receive-mentions.mjs --github-check",
+      "output": "GITHUB_CHECK_PASS repository=seongwwww/sumtech task=P001 issue=1 state=CLOSED reason=COMPLETED"
+    },
+    {
+      "command": "node receive-mentions.mjs --report C:\\Users\\s2608\\AppData\\Local\\Temp\\buzz-pc-myYmQr\\report.json",
+      "output": "P999998_REPORT_ALREADY_POSTED root_id=46518b4711cd97c97f4903f312f6afe140bf55a2c331c3d628ac76334b9ab76a"
+    },
+    {
+      "command": "node receive-mentions.mjs --report C:\\Users\\s2608\\AppData\\Local\\Temp\\buzz-pc-myYmQr\\report.json",
+      "output": "P999998_REPORT_ALREADY_POSTED root_id=46518b4711cd97c97f4903f312f6afe140bf55a2c331c3d628ac76334b9ab76a"
+    },
+    {
+      "command": "node receive-mentions.mjs --report C:\\Users\\s2608\\AppData\\Local\\Temp\\buzz-pc-myYmQr\\report.json",
+      "output": "P999998_REPORT_ALREADY_POSTED root_id=46518b4711cd97c97f4903f312f6afe140bf55a2c331c3d628ac76334b9ab76a"
+    },
+    {
+      "command": "node receive-mentions.mjs --report C:\\Users\\s2608\\AppData\\Local\\Temp\\buzz-pc-myYmQr\\report.json",
+      "output": "P999998_REPORT_ALREADY_POSTED root_id=46518b4711cd97c97f4903f312f6afe140bf55a2c331c3d628ac76334b9ab76a"
+    },
+    {
+      "command": "node receive-mentions.mjs --context-check P999998",
+      "output": "TASK_CONTEXT_LOADED task=P999998 issue=1 pr=none\nCONTEXT_CHECK={\"task_id\":\"P999998\",\"issue\":1,\"pr\":null,\"workflows\":0,\"documents\":[\"buzz-bridge/README.ko.md\"],\"thread_events\":2}\nCONTEXT_ANSWER=- **P999998:** 작업 상태는 `completed`이며 같은 Buzz 스레드에 수정 보고서가 있습니다. 다만 테스트는 여전히 `in_progress`이고, 근거도 “verify-pc.mjs 실행 중”이므로 검증 전체 통과로 볼 수 없습니다. 변경 파일은 `buzz-bridge/receive-mentions.mjs`, 소스는 로컬에만 있고 push되지 않은 상태입니다.\n- **GitHub:** [Issue #1](https://github.com/seongwwww/sumtech/issues/1)은 `CLOSED / COMPLETED`입니다. PR은 없고, 제공된 workflow 실행 목록도 비어 있어 CI 통과 증거는 없습니다. Issue의 멘션 수신·답변 게시 성공은 **과거 사용자 보고에 따른 수동 검증**입니다. 이번 답변에서 실행한 테스트는 없습니다.\n- **운영 절차:** [운영 문서](buzz-bridge/README.ko.md)에 따르면 지정된 Windows PC 한 대에서 기존 Agent-A를 운영합니다. 팀원은 작업 JSON과 Issue/PR 정보를 운영자에게 전달하고, 허용된 OWNER가 멘션합니다. `run.ps1`로 시작하고 `status.ps1`로 상태를 확인하며, 연결 성공은 로그의 `LISTENING`으로 판단합니다. 중지는 `stop.ps1`을 사용합니다. 보고서 게시 전에는 listener를 중지하고, 수정 보고서는 기존 작업 스레드에 게시합니다.\n- **검증 한계:** 같은 문서는 `npm test`의 fixture 검증과 `verify:pc`의 실환경 검증을 구분합니다. 실제 PR/CI 변경은 생성하지 않습니다. 결과 파일로 안내된 `docs/one-pc-verification.json`의 내용은 제공되지 않아 최종 검증 결과는 확인할 수 없습니다. 10대 PC 배포 완료 근거도 없습니다."
+    },
+    {
+      "command": "node receive-mentions.mjs --watch-github --channels agent-reports --watch-config config/watch.example.json --once",
+      "output": "GITHUB_POLL={\"baseline\":false,\"queued\":0}"
+    }
+  ],
+  "limitations": [
+    "Installed Claude CLI live check failed; OAuth session was observed expired during this session. Claude selection/parser/failure paths are covered by npm test; user login is required for live Claude answers.",
+    "Signed authorized-mention response workflow uses local fixture keys in npm test. No new live human mention was fabricated."
+  ],
+  "task_id": "P999998",
+  "root_event_id": "46518b4711cd97c97f4903f312f6afe140bf55a2c331c3d628ac76334b9ab76a",
+  "lifecycle": {
+    "notification_polling": "watch.example.json supplied to managed listener",
+    "current_agent": "codex",
+    "live_human_mention": "not fabricated",
+    "restart": "LISTENING channels=test,agent-reports",
+    "stop": "STOPPED",
+    "start": "RUNNING"
+  }
+}

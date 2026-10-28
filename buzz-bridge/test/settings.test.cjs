@@ -1,0 +1,51 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const os = require('node:os');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+test('new PC setup initializes its own DPAPI identity without touching an existing Agent-A or overwriting config', async (t) => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'buzz-new-pc-'));
+  t.after(() => fs.rm(dir, { recursive: true, force: true }));
+  const config = path.join(dir, 'local.json');
+  const state = path.join(dir, 'BuzzBridge');
+  await fs.mkdir(state);
+  await fs.writeFile(path.join(state, 'agent-a.identity.json'), '{"public_key":"' + 'a'.repeat(64) + '"}');
+  const env = { ...process.env, LOCALAPPDATA: dir, BUZZ_BRIDGE_CONFIG: config };
+  const args = [path.resolve(__dirname, '../scripts/setup-agent.mjs'), '--name', 'Agent-B', '--caller', 'b'.repeat(64)];
+  const result = spawnSync(process.execPath, args, { env, encoding: 'utf8', windowsHide: true });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Agent-B identity created/);
+  const file = path.join(state, 'agent-b.identity.json');
+  const before = await fs.readFile(file, 'utf8');
+  assert.equal(JSON.parse(before).agent, 'Agent-B');
+  assert.equal(spawnSync(process.execPath, args, { env, windowsHide: true }).status, 1);
+  assert.equal(await fs.readFile(file, 'utf8'), before);
+  assert.equal(JSON.parse(await fs.readFile(path.join(state, 'agent-a.identity.json'), 'utf8')).public_key, 'a'.repeat(64));
+});
+
+test('independent PC config derives Agent-B identity, preserves Agent-A and authorizes configured team callers only', async (t) => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'buzz-settings-'));
+  t.after(() => fs.rm(dir, { recursive: true, force: true }));
+  const { loadSettings } = await import('../settings.mjs');
+  const { authorizedMention } = await import('../receive-mentions.mjs');
+  const { generateSecretKey, getPublicKey, finalizeEvent } = await import('nostr-tools');
+  const callerKey = generateSecretKey(), otherKey = generateSecretKey();
+  const caller = getPublicKey(callerKey), other = getPublicKey(otherKey);
+  const configPath = path.join(dir, 'local.json');
+  await fs.writeFile(configPath, JSON.stringify({ agent_name: 'Agent-B', allowed_callers: [caller] }));
+  const env = { LOCALAPPDATA: dir, BUZZ_BRIDGE_CONFIG: configPath };
+  let config = loadSettings(env);
+  assert.match(config.identityPath, /agent-b.identity.json$/);
+  assert.equal(config.agentPublicKey, null);
+  await fs.mkdir(path.dirname(config.identityPath), { recursive: true });
+  await fs.writeFile(config.identityPath, JSON.stringify({ public_key: other }));
+  config = loadSettings(env);
+  assert.equal(config.agentPublicKey, other);
+  const mention = (secret) => finalizeEvent({ kind: 9, created_at: 1, tags: [['h', 'channel'], ['p', other]], content: 'question' }, secret);
+  assert.ok(authorizedMention(mention(callerKey), 'channel', config.allowedCallers, other));
+  assert.equal(authorizedMention(mention(otherKey), 'channel', config.allowedCallers, other), false);
+  await fs.writeFile(configPath, JSON.stringify({ agent_name: 'Agent-B', agent_public_key: caller }));
+  assert.throws(() => loadSettings(env), /differs from existing identity/);
+});
