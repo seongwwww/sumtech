@@ -1,0 +1,10 @@
+.ouroboros/
+**/node_modules/
+**/dist/
+**/*.log
+**/*.identity.json
+**/runner.json
+buzz-bridge/config/local.json
+.env
+.env.local
+
